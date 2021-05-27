@@ -32,7 +32,7 @@ public class SelectionManager : MonoBehaviour
                 hoveredObject.Highlight();
             } 
             // Remove highlighting from previously hovered object
-            else if (found != hoveredObject) { 
+            else if (found != hoveredObject && hoveredObject != null) { 
                 hoveredObject.RemoveHighlighting();
                 hoveredObject = null;
             }
