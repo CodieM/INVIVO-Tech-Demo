@@ -11,17 +11,6 @@ public class SelectionManager : MonoBehaviour
     }
     void Update()
     {
-        // Highlight selection
-        if (Input.GetMouseButton(0) || Input.GetMouseButtonDown(0)) {
-            var found = GetTarget();
-            if (found != null && found != selectedObject&& found != hoveredObject) {
-                if (hoveredObject != null)
-                    hoveredObject.RemoveHighlighting();
-                hoveredObject = found;
-                hoveredObject.Highlight();
-            }
-            
-        }
         // Select hovered object
         if (Input.GetMouseButtonUp(0)) {
             var found = GetTarget();
@@ -32,7 +21,24 @@ public class SelectionManager : MonoBehaviour
                 selectedObject = found;
                 selectedObject.Select();
             }
+        } 
+        // Highlight selection
+        else if (Input.GetMouseButton(0) || Input.GetMouseButtonDown(0)) {
+            var found = GetTarget();
+            if (found != null && found != selectedObject && found != hoveredObject) {
+                if (hoveredObject != null)
+                    hoveredObject.RemoveHighlighting();
+                hoveredObject = found;
+                hoveredObject.Highlight();
+            } 
+            // Remove highlighting from previously hovered object
+            else if (found != hoveredObject) { 
+                hoveredObject.RemoveHighlighting();
+                hoveredObject = null;
+            }
+            
         }
+
     }
     InteractableObject GetTarget() {
         var ray = mainCam.ScreenPointToRay(Input.mousePosition);
