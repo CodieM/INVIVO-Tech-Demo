@@ -60,7 +60,11 @@ public class InteractableObject : MonoBehaviour
         Camera mainCam = Camera.main;
         Vector3 startPos = mainCam.transform.position;
         Quaternion startRot = mainCam.transform.rotation;
-        CameraViewPosition.LookAt(transform);
+        var bounds = new Bounds();
+        foreach (var rend in childRenderers) {
+            bounds.Encapsulate(rend.bounds);
+        }
+        CameraViewPosition.LookAt(bounds.center);
         Quaternion finalRot = CameraViewPosition.rotation;
         yield return null;
         overriden = false;

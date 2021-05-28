@@ -15,7 +15,7 @@ public class Windmill : MonoBehaviour
         mainCam = Camera.main;
     }
     private void OnEnable() {
-        degreesPerSecond = 0f;
+        degreesPerSecond = -45f;
     }
 
     void Update() {

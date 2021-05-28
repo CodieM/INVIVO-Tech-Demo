@@ -14,7 +14,7 @@ public class SelectionManager : MonoBehaviour
         // Select hovered object
         if (Input.GetMouseButtonUp(0)) {
             var found = GetTarget();
-            if (found != null) {
+            if (found != null && found != selectedObject) {
                 hoveredObject = null;
                 if (selectedObject != null)
                     selectedObject.Deselect();
