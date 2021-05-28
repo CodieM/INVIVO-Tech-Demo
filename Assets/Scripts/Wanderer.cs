@@ -40,7 +40,9 @@ public class Wanderer : MonoBehaviour
         }
         lastFramePos = transform.position;
     }
+#if UNITY_EDITOR
     private void OnDrawGizmos() {
         Handles.DrawWireDisc(targetPos, Vector3.up, 1f);
     }
+#endif
 }
