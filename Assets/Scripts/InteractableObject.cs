@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 public class InteractableObject : MonoBehaviour
@@ -7,11 +8,15 @@ public class InteractableObject : MonoBehaviour
     public TMPro.TextMeshProUGUI ObjectLabel;
     public List<GameObject> DisableWhenInactive;
     public Material HighlightMat, InactiveMat;
+    public Transform CameraViewPosition;
+    public float CameraTransitionTime = 3f;
+    public List<Renderer> InactiveIgnore = new List<Renderer>();
     Material inactiveMat;
     Renderer[] childRenderers;
     Dictionary<Renderer, Material> activeMatDict = new Dictionary<Renderer, Material>();
     bool active = false;
     Animator animator;
+    private static bool overriden = false;
     void Start()
     {
         ObjectLabel.text = ObjectTitle;
@@ -24,12 +29,14 @@ public class InteractableObject : MonoBehaviour
         childRenderers = GetComponentsInChildren<Renderer>();
         foreach (var rend in childRenderers) {
             activeMatDict.Add(rend, rend.material);
-            rend.material = InactiveMat;
+            if (!InactiveIgnore.Contains(rend))
+                rend.material = InactiveMat;
         }
     }
     public virtual void Highlight() {
         foreach (var rend in childRenderers) {
-            rend.material = HighlightMat;
+            if (!InactiveIgnore.Contains(rend))
+                rend.material = HighlightMat;
         }
     }
     public virtual void Select() {
@@ -39,8 +46,39 @@ public class InteractableObject : MonoBehaviour
         }
         if (animator != null)
             animator.SetBool("Active", true);
+        
+        if (CameraViewPosition != null) {
+            StartCoroutine(MoveCameraToLocation());
+        }
     }
 
+    private IEnumerator MoveCameraToLocation()
+    {
+        overriden = true;
+        float startTime = Time.time;
+        float elapsed = 0f;
+        Camera mainCam = Camera.main;
+        Vector3 startPos = mainCam.transform.position;
+        Quaternion startRot = mainCam.transform.rotation;
+        CameraViewPosition.LookAt(transform);
+        Quaternion finalRot = CameraViewPosition.rotation;
+        yield return null;
+        overriden = false;
+        while ((elapsed = Time.time - startTime) < CameraTransitionTime) {
+            if (overriden) {
+                break;
+            }
+            float percentComplete = elapsed / CameraTransitionTime;
+            mainCam.transform.position = new Vector3 (
+                Mathf.SmoothStep(startPos.x, CameraViewPosition.position.x, percentComplete), 
+                Mathf.SmoothStep(startPos.y, CameraViewPosition.position.y, percentComplete), 
+                Mathf.SmoothStep(startPos.z, CameraViewPosition.position.z, percentComplete)
+            );
+            percentComplete = percentComplete * percentComplete * (3f - 2f * percentComplete);
+            mainCam.transform.rotation = Quaternion.Lerp(startRot, finalRot, percentComplete);
+            yield return null;
+        }
+    }
 
     public virtual void RemoveHighlighting() {
         foreach (var rend in childRenderers) {
@@ -50,7 +88,8 @@ public class InteractableObject : MonoBehaviour
     public virtual void Deselect() {
         SetDisableListVisibility(false);
         foreach (var rend in childRenderers) {
-            rend.material = InactiveMat;
+            if (!InactiveIgnore.Contains(rend))
+                rend.material = InactiveMat;
         }
         if (animator != null)
             animator.SetBool("Active", false);

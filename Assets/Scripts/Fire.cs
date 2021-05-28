@@ -12,16 +12,23 @@ public class Fire : MonoBehaviour
     Dictionary<Light, Vector3> targetDict = new Dictionary<Light, Vector3>();
     public float MovementIntensity = 0.7f;
     public float MinSpeed = 0.1f, MaxSpeed = 0.7f;
+    public ParticleSystem smokeParticles;
     void Start()
     {
         lights = GetComponentsInChildren<Light>();
         foreach(var light in lights) {
                 effectTimeDict.Add(light, Random.Range(MinSpeed, MaxSpeed));
                 elapsedTimeDict.Add(light, 0f);
-                Vector3 newPos = Random.insideUnitSphere * MovementIntensity;
+                Vector3 newPos = Random.insideUnitSphere * Random.Range(0.1f, MovementIntensity);
                 targetDict.Add(light, transform.position + newPos);
                 distanceDict.Add(light, Vector3.Distance(targetDict[light], light.transform.position));
         }
+    }
+    private void OnEnable() {
+        smokeParticles.Play();
+    }
+    private void OnDisable() {
+        smokeParticles.Stop();
     }
 
     // Update is called once per frame
